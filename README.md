@@ -1,1 +1,1 @@
-# MiniHabits-Programming
+# MiniHabits
