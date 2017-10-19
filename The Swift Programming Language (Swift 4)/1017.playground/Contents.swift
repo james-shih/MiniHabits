@@ -114,25 +114,25 @@ protocol DiceGameDelegate {
 }
 
 class SnakeAndLadders: DiceGame {
-    let finalSquere = 25
+    let finalSquare = 25
     let dice = Dice(sides: 6, generator: LinearCongruentialGenerator())
     var squre = 0
     var board: [Int]
     init() {
-        board = Array(repeatElement(0, count: finalSquere + 1))
+        board = Array(repeatElement(0, count: finalSquare + 1))
         board[03] = +08; board[06] = +11; board[09] = +09; board[10] = +02; board[14] = -10; board[19] = -11; board[22] = -02; board[24] = -08
     }
     var delegate: DiceGameDelegate?
     func play() {
         squre = 0
         delegate?.gameDidStart(self)
-        gameLoop: while squre != finalSquere {
+        gameLoop: while squre != finalSquare {
             let diceRoll = dice.roll()
             delegate?.game(self, didStartNewTurnWithDiceRoll: diceRoll)
             switch squre + diceRoll {
-            case finalSquere:
+            case finalSquare:
                 break gameLoop
-            case let newSquare where newSquare > finalSquere:
+            case let newSquare where newSquare > finalSquare:
                 continue gameLoop
             default:
                 squre += diceRoll
@@ -169,8 +169,46 @@ let game = SnakeAndLadders()
 game.delegate = tracker
 game.play()
 
+//Adding Protocol Conformance with an Extension
+protocol TextRepresentable {
+    var textualDescription: String { get }
+}
 
+extension Dice: TextRepresentable {
+    var textualDescription: String {
+        return "A \(sides)-sided dice"
+    }
+}
 
+let d12 = Dice(sides: 12, generator: LinearCongruentialGenerator())
+print(d12.textualDescription)
+
+extension SnakeAndLadders: TextRepresentable {
+    var textualDescription: String {
+        return "A game of Snake and Ladders with \(finalSquare) squares"
+    }
+}
+print(game.textualDescription)
+
+//Declaring Protocol Adoption with an Extension
+struct Hamster {
+    var name: String
+    var textualDescription: String {
+        return "A hamster named \(name)"
+    }
+}
+
+extension Hamster: TextRepresentable {}
+
+let simonTheHamster = Hamster(name: "Simon")
+let somethingTextRepresentable: TextRepresentable = simonTheHamster
+print(somethingTextRepresentable.textualDescription)
+
+//Colletion of Protocol Types
+let things: [TextRepresentable] = [game, d12, simonTheHamster]
+for thing in things {
+    print(thing.textualDescription)
+}
 
 
 
