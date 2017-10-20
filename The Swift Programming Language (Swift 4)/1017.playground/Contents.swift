@@ -113,7 +113,7 @@ protocol DiceGameDelegate {
     func gameDidEnd(_ game: DiceGame)
 }
 
-class SnakeAndLadders: DiceGame {
+class SnakesAndLadders: DiceGame {
     let finalSquare = 25
     let dice = Dice(sides: 6, generator: LinearCongruentialGenerator())
     var squre = 0
@@ -148,7 +148,7 @@ class DiceGameTraker: DiceGameDelegate {
     
     func gameDidStart(_ game: DiceGame) {
         numberOfTurns = 0
-        if game is SnakeAndLadders {
+        if game is SnakesAndLadders {
             print("Started a new game of Snakes and Ladders")
         }
         print("The game is using a \(game.dice.sides)-sided dice")
@@ -165,7 +165,7 @@ class DiceGameTraker: DiceGameDelegate {
 }
 
 let tracker = DiceGameTraker()
-let game = SnakeAndLadders()
+let game = SnakesAndLadders()
 game.delegate = tracker
 game.play()
 
@@ -183,7 +183,7 @@ extension Dice: TextRepresentable {
 let d12 = Dice(sides: 12, generator: LinearCongruentialGenerator())
 print(d12.textualDescription)
 
-extension SnakeAndLadders: TextRepresentable {
+extension SnakesAndLadders: TextRepresentable {
     var textualDescription: String {
         return "A game of Snake and Ladders with \(finalSquare) squares"
     }
@@ -210,5 +210,194 @@ for thing in things {
     print(thing.textualDescription)
 }
 
+//Protocal Inheritance
+protocol PrettyTextRepresentable: TextRepresentable {
+    var prettyTextualDescription: String { get }
+}
 
+extension SnakesAndLadders: PrettyTextRepresentable {
+    var prettyTextualDescription: String {
+        var output = textualDescription + ":\n"
+        for index in 1...finalSquare {
+            switch board[index] {
+            case let ladder where ladder > 0:
+                output += "▴ "
+            case let snake where snake < 0:
+                output += "▾ "
+            default:
+                output += "o "
+            }
+        }
+        return output
+    }
+}
+
+print(game.prettyTextualDescription)
+
+//Class-Only Protocols
+
+//Protocol Composition
+protocol Named {
+    var name: String { get }
+}
+
+protocol Aged {
+    var age: Int { get }
+}
+
+struct Person1: Named, Aged {
+    var name: String
+    var age: Int
+}
+
+func wishHappyBirthday(to celebrator: Named & Aged) {
+    print("Happy birthday, \(celebrator.name), you're \(celebrator.age)!")
+}
+
+let birthdayPerson = Person1(name: "Malcolm", age: 21)
+
+class Location {
+    var latitude: Double
+    var longtitude: Double
+    init(latitude: Double, longtitude: Double) {
+        self.latitude = latitude
+        self.longtitude = longtitude
+    }
+}
+
+class City: Location, Named {
+    var name: String
+    init(name: String, latitude: Double, longtitude: Double) {
+        self.name = name
+        super.init(latitude: latitude, longtitude: longtitude)
+    }
+}
+
+func beginConcert(in location: Location & Named) {
+    print("Hello, \(location.name)")
+}
+
+let seattle = City(name: "Seattle", latitude: 47.6, longtitude: -122.3)
+beginConcert(in: seattle)
+
+//Checking for Protocol Conformance
+protocol HasArea {
+    var area: Double { get }
+}
+
+class Circle: HasArea {
+    let pi = 3.14159
+    var radius: Double
+    var area: Double { return pi * radius * radius }
+    init(radius: Double) {
+        self.radius = radius
+    }
+}
+
+class Country: HasArea {
+    var area: Double
+    init(area: Double) {
+        self.area = area
+    }
+}
+
+class Animal {
+    var legs: Int
+    init(legs: Int) {
+        self.legs = legs
+    }
+}
+
+let objects: [AnyObject] = [
+    Circle(radius: 2.0),
+    Country(area: 243_610),
+    Animal(legs: 4)
+]
+
+for object in objects {
+    if let objectWithArea = object as? HasArea {
+        print("Area is \(objectWithArea.area)")
+    } else {
+        print("Something that doesn't have an area")
+    }
+}
+
+//Optional Protocol Requirements
+@objc protocol CounterDataSource {
+    @objc optional func increment(forCount count: Int) -> Int
+    @objc optional var fixedIncrement: Int { get }
+}
+
+class Counter {
+    var count = 0
+    var dataSource: CounterDataSource?
+    func increment() {
+        if let amount = dataSource?.increment?(forCount: count) {
+            count += amount
+        } else if let amount = dataSource?.fixedIncrement {
+            count += amount
+        }
+    }
+}
+
+class ThreeSource: NSObject, CounterDataSource {
+    let fixedIncrement: Int = 3
+}
+
+var counter = Counter()
+counter.dataSource = ThreeSource()
+for _ in 1...4 {
+    counter.increment()
+    print(counter.count)
+}
+
+class TowardsZeroSource: NSObject, CounterDataSource {
+    func increment(forCount count: Int) -> Int {
+        if count == 0 {
+            return 0
+        } else if count < 0 {
+            return 1
+        } else {
+            return -1
+        }
+    }
+}
+
+counter.count = -4
+counter.dataSource = TowardsZeroSource()
+for _ in 1...5 {
+    counter.increment()
+    print(counter.count)
+}
+
+//Protocol Extension
+extension RandomNumberGenerator {
+    func randomBool() -> Bool {
+        return random() > 0.5
+    }
+}
+
+let generator1 = LinearCongruentialGenerator()
+print("Here's a random number: \(generator1.random())")
+print("And here's a random Boolean: \(generator1.randomBool())")
+
+extension PrettyTextRepresentable {
+    var prettyTextualDescription: String {
+        return textualDescription
+    }
+}
+
+//Adding Constraints to Protocol Extensions
+extension Collection where Iterator.Element: TextRepresentable {
+    var textualDescription: String {
+        let itemsAsText = self.map{ $0.textualDescription }
+        return "[" + itemsAsText.joined(separator: ", ")
+            + "]"    }
+}
+
+let murrayTheHamster = Hamster(name: "Murray")
+let morganTheHamster = Hamster(name: "Morgan")
+let mauriceTheHamster = Hamster(name: "Maurice")
+let hamsters = [murrayTheHamster, morganTheHamster, mauriceTheHamster]
+print(hamsters.textualDescription)
 
