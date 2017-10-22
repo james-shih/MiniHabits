@@ -43,6 +43,47 @@ var someString = "hello"
 var anotherString = "world"
 swapTwoValues(&someString, &anotherString)
 
+//Type Parameters
+
+//Generic Types
+struct IntSatak {
+    var items = [Int]()
+    mutating func push(_ item: Int) {
+        items.append(item)
+    }
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+}
+
+struct Stack<Element> {
+    var items = [Element]()
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+}
+
+var stackOfStrings = Stack<String>()
+stackOfStrings.push("uno")
+stackOfStrings.push("dos")
+stackOfStrings.push("tres")
+stackOfStrings.push("cuatro")
+
+let formTheTop = stackOfStrings.pop()
+
+//Extending a Generic Type
+extension Stack {
+    var topItem: Element? {
+        return items.isEmpty ? nil : items[items.count - 1]
+    }
+}
+
+if let topItem = stackOfStrings.topItem {
+    print("The top item on the stack is \(topItem).")
+}
 
 
 
