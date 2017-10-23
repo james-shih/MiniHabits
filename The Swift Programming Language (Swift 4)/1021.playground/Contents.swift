@@ -85,5 +85,78 @@ if let topItem = stackOfStrings.topItem {
     print("The top item on the stack is \(topItem).")
 }
 
+//Type Constraints
+
+//Type Constrants in Action
+func findIndex(ofString valueToFind: String, in array: [String]) -> Int? {
+    for (index, value) in array.enumerated() {
+        if value == valueToFind {
+            return index
+        }
+    }
+    return nil
+}
+
+let strings = ["cats", "dog", "llama", "parakeet", "terrapin"]
+if let foundIndex = findIndex(ofString: "llama", in: strings) {
+    print("The index of llama is \(foundIndex)")
+}
+
+func findIndex<T: Equatable>(of valueToFind: T, in array:[T]) -> Int? {
+    for (index, value) in array.enumerated() {
+        if value == valueToFind {
+            return index
+        }
+    }
+    return nil
+}
+
+let doubleIndex = findIndex(of: 9.3, in: [3.14159, 0.1, 0.25])
+let stringIndex = findIndex(of: "Andrea", in: ["Mike", "Malcolm", "Andrea"])
+
+//Associated Types
+
+//Associated Types in Action
+protocol Container {
+    associatedtype Item
+    mutating func apped(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+}
+
+struct InsStack: Container {
+    var items = [Int]()
+    
+    mutating func push(_ item: Int) {
+        items.append(item)
+    }
+    
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+    
+    typealias Item = Int
+    
+    mutating func apped(_ item: Int) {
+        self.push(item)
+    }
+    
+    var count: Int {
+        return items.count
+    }
+    
+    subscript(i: Int) -> Int {
+        return items[i]
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
